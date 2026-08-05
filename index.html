@@ -428,12 +428,12 @@
       <div class="price-grid">
         <div class="price-card reveal">
           <div class="price-count">Gói dùng thử</div>
-          <div class="price-amount">20.000đ</div>
+          <div class="price-amount">30.000đ</div>
           <div class="price-note">cho 5 bánh</div>
         </div>
         <div class="price-card featured reveal">
           <div class="price-count">Gói được yêu thích</div>
-          <div class="price-amount">50.000đ</div>
+          <div class="price-amount">80.000đ</div>
           <div class="price-note">cho 15 bánh</div>
         </div>
       </div>
@@ -572,13 +572,53 @@
     revealEls.forEach(el => el.classList.add('in'));
   }
 
-  // Registration form (front-end only — connect to a backend/Google Sheet to actually store data)
+  // Registration form — gửi dữ liệu vào Google Sheet qua Google Form (formResponse endpoint)
+  // 👉 Sau khi tạo Google Form (xem HUONG_DAN_KET_NOI_GOOGLE_FORM.md), dán 3 giá trị dưới đây:
+  const GOOGLE_FORM_ID = "1FAIpQLSdiyOIhi_Z6GW7831-ET_KQqNLCr0E8fPNUpBD6KvgrsJztvw";
+  const ENTRY_FULLNAME = "entry.468545819";
+  const ENTRY_PHONE = "entry.256163484";
+
   const form = document.getElementById('registerForm');
   const success = document.getElementById('formSuccess');
+  const submitBtn = form.querySelector('button[type="submit"]');
+
   form.addEventListener('submit', function (e) {
     e.preventDefault();
-    form.classList.add('hide');
-    success.classList.add('show');
+
+    if (GOOGLE_FORM_ID.includes("PASTE_FORM_ID_HERE")) {
+      alert("Chưa kết nối Google Form: vui lòng dán FORM_ID và mã entry vào code (xem hướng dẫn HUONG_DAN_KET_NOI_GOOGLE_FORM.md).");
+      return;
+    }
+
+    const fullname = document.getElementById('fullname').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    if (!fullname || !phone) return;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Đang gửi...";
+
+    const formAction = "https://docs.google.com/forms/d/e/" + GOOGLE_FORM_ID + "/formResponse";
+    const body = new URLSearchParams();
+    body.append(ENTRY_FULLNAME, fullname);
+    body.append(ENTRY_PHONE, phone);
+
+    fetch(formAction, {
+      method: "POST",
+      mode: "no-cors", // Google Form không trả CORS header, nên dùng no-cors để gửi được request
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body
+    })
+      .then(function () {
+        form.classList.add('hide');
+        success.classList.add('show');
+      })
+      .catch(function () {
+        alert("Có lỗi khi gửi đăng ký, vui lòng thử lại hoặc gọi trực tiếp 0982 086 622.");
+      })
+      .finally(function () {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Gửi đăng ký";
+      });
   });
 </script>
 
